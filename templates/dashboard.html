@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Workforce Dashboard</h1>
+
+    <h2>Welcome, {{ user }}</h2>
+
+    <hr>
+
+    <div class="analytics-box">
+
+        <h3>Productivity Analytics</h3>
+
+        <p><strong>Productivity Score:</strong> {{ productivity_score }}%</p>
+
+        <p><strong>AI Suggestion:</strong> {{ suggestion }}</p>
+
+    </div>
+
+    <hr>
+
+    <h3>Add Task</h3>
+
+    <form method="POST" action="/add_task">
+
+        <input type="text" name="title" placeholder="Enter task" required>
+
+        <button type="submit">Add Task</button>
+
+    </form>
+
+    <hr>
+
+    <h3>Your Tasks</h3>
+
+    {% if tasks %}
+
+        <ul>
+
+            {% for task in tasks %}
+
+                <li>
+
+                    {{ task.title }} - {{ task.status }}
+
+                    {% if task.status != "Completed" %}
+                        <a href="/complete_task/{{ task.id }}">✔ Complete</a>
+                    {% endif %}
+
+                    <a href="/delete_task/{{ task.id }}">❌ Delete</a>
+
+                </li>
+
+            {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <p>No tasks yet</p>
+
+    {% endif %}
+
+    <hr>
+
+    <h3>Task Analytics Chart</h3>
+
+    <canvas id="taskChart" width="400" height="200"></canvas>
+
+    <script>
+
+        const completedTasks = {{ tasks | selectattr("status", "equalto", "Completed") | list | length }};
+        const pendingTasks = {{ tasks | selectattr("status", "equalto", "Pending") | list | length }};
+
+        const ctx = document.getElementById('taskChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Completed', 'Pending'],
+                datasets: [{
+                    label: 'Task Status',
+                    data: [completedTasks, pendingTasks],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+    </script>
+
+    <br>
+
+    <a href="/logout" class="logout">Logout</a>
+
+</div>
+
+</body>
+</html>
